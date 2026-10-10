@@ -4,7 +4,7 @@
 
 - Added `LICENSE-MIT` and `LICENSE-APACHE` (Apache text from apache.org). Crate metadata: repository, keywords, categories; `publish = false` removed.
 - README: install from GitHub with `cargo install --git`, licence section.
-- Public on GitHub at github.com/conorbr/gogo. crates.io held for now: `gogo-spaces` publishes later, then the README switches to `cargo install gogo-spaces`.
+- Public on GitHub at github.com/conorbr/gogo. Published `gogo-spaces` 0.1.0 to crates.io the same day. README installs with `cargo install gogo-spaces`.
 
 ## 2026-10-10: v0.1 build
 

@@ -15,10 +15,10 @@ Opens the `blog` space in herdr: the right directory, the right tabs, and the ri
 With Rust 1.85 or later:
 
 ```bash
-cargo install --git https://github.com/conorbr/gogo
+cargo install gogo-spaces
 ```
 
-It installs a command called `gogo`. On crates.io it will be `gogo-spaces`, because `gogo` was taken.
+The crate is `gogo-spaces` because `gogo` was taken on crates.io. The command it installs is `gogo`. Latest from GitHub: `cargo install --git https://github.com/conorbr/gogo`.
 
 From a checkout: `cargo install --path .`
 
