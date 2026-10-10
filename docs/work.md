@@ -1,5 +1,13 @@
 # Work log
 
+## 2026-10-10: `gogo herdr stop`
+
+- `gogo stop` (`gogo <backend> stop`, `-n` to list only): closes every workspace in every running herdr session, then stops each session. `--json` lists sessions and the workspaces closed.
+- Workspaces close first because herdr restores them after a restart; checked by stopping and restarting a test session.
+- Inside herdr, gogo's own workspace and session go last, in a `setsid` child, after the output prints. A process group alone was killed with the workspace; checked both.
+- Tested against throwaway `herdr --session gogotest server` sessions, with a `herdr` wrapper hiding the real session: dry run, `--json -v`, nothing running, and run from a pane inside the session being stopped. New dependency: `libc`, for `setsid`.
+- `open` now starts the herdr server if it isn't running (after a `stop`, say): `herdr server` in its own Unix session, then waits up to 5s for `herdr status server` to say running. `list` still only checks, so it never starts a server. Tested from a stopped server: opened `college`, server left running with PPID 1. herdr also creates its default `~` workspace on start.
+
 ## 2026-10-10: going public
 
 - Added `LICENSE-MIT` and `LICENSE-APACHE` (Apache text from apache.org). Crate metadata: repository, keywords, categories; `publish = false` removed.

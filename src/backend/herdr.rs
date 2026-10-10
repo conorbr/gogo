@@ -5,11 +5,13 @@ use std::collections::{BTreeMap, HashMap};
 use std::env;
 use std::io;
 use std::os::unix::process::CommandExt;
-use std::process::Command;
+use std::process::{Command, Stdio};
+use std::thread;
+use std::time::{Duration, Instant};
 
 use serde_json::Value;
 
-use super::Backend;
+use super::{Backend, Stopped};
 use crate::error::{Error, Result};
 use crate::plan::Step;
 
@@ -18,18 +20,33 @@ pub struct Herdr {
     workspace: Option<String>,
     /// Tab name to (tab ID, root pane ID), for tabs this run created.
     tabs: HashMap<String, (String, String)>,
+    /// The session gogo runs in, as (name, socket, gogo's workspace ID), left
+    /// for `finish_stop`.
+    stop_last: Option<(String, String, Option<String>)>,
 }
 
 impl Herdr {
     pub fn new(verbose: bool) -> Self {
-        Herdr { verbose, workspace: None, tabs: HashMap::new() }
+        Herdr { verbose, workspace: None, tabs: HashMap::new(), stop_last: None }
     }
 
     fn call(&self, args: &[&str]) -> Result<Value> {
+        self.call_at(None, args)
+    }
+
+    /// Runs a herdr command against the session listening on `socket`, or the
+    /// inherited one.
+    fn call_at(&self, socket: Option<&str>, args: &[&str]) -> Result<Value> {
         if self.verbose {
-            eprintln!("herdr {}", args.iter().map(|a| quote(a)).collect::<Vec<_>>().join(" "));
+            let prefix = socket.map(|s| format!("HERDR_SOCKET_PATH={} ", quote(s))).unwrap_or_default();
+            eprintln!("{prefix}herdr {}", args.iter().map(|a| quote(a)).collect::<Vec<_>>().join(" "));
         }
-        let output = Command::new("herdr").args(args).output().map_err(|e| {
+        let mut command = Command::new("herdr");
+        command.args(args);
+        if let Some(socket) = socket {
+            command.env("HERDR_SOCKET_PATH", socket);
+        }
+        let output = command.output().map_err(|e| {
             if e.kind() == io::ErrorKind::NotFound {
                 Error::unavailable("herdr isn't installed (not found on PATH)")
             } else {
@@ -54,12 +71,52 @@ impl Herdr {
     }
 
     fn workspaces(&self) -> Result<Vec<(String, String)>> {
-        let list = self.call(&["workspace", "list"])?;
+        self.workspaces_at(None)
+    }
+
+    /// (ID, label) of each workspace in a session.
+    fn workspaces_at(&self, socket: Option<&str>) -> Result<Vec<(String, String)>> {
+        let list = self.call_at(socket, &["workspace", "list"])?;
         let items = list.pointer("/result/workspaces").and_then(Value::as_array).cloned().unwrap_or_default();
         Ok(items
             .iter()
             .filter_map(|w| Some((str_at(w, "/workspace_id")?, str_at(w, "/label")?)))
             .collect())
+    }
+
+    /// (name, socket) of each running session, with the one gogo runs in last.
+    fn sessions(&self) -> Result<Vec<(String, String)>> {
+        let list = self.call(&["session", "list", "--json"])?;
+        let items = list.pointer("/sessions").and_then(Value::as_array).cloned().unwrap_or_default();
+        let mut sessions: Vec<(String, String)> = items
+            .iter()
+            .filter(|s| s.pointer("/running").and_then(Value::as_bool) == Some(true))
+            .filter_map(|s| Some((str_at(s, "/name")?, str_at(s, "/socket_path")?)))
+            .collect();
+        let own = self.own_socket();
+        sessions.sort_by_key(|(_, socket)| own.as_deref() == Some(socket.as_str()));
+        Ok(sessions)
+    }
+
+    /// Whether the herdr server is up. Fails only if herdr can't be run.
+    fn running(&self) -> Result<bool> {
+        let output = Command::new("herdr").args(["status", "server"]).output().map_err(|e| {
+            if e.kind() == io::ErrorKind::NotFound {
+                Error::unavailable("herdr isn't installed (not found on PATH)")
+            } else {
+                Error::unavailable(format!("couldn't run herdr: {e}"))
+            }
+        })?;
+        let text = String::from_utf8_lossy(&output.stdout);
+        Ok(output.status.success() && text.lines().any(|l| l.trim() == "status: running"))
+    }
+
+    /// The socket of the session gogo is running in, if it is.
+    fn own_socket(&self) -> Option<String> {
+        if !self.inside() {
+            return None;
+        }
+        env::var("HERDR_SOCKET_PATH").ok().filter(|s| !s.is_empty())
     }
 }
 
@@ -69,19 +126,32 @@ impl Backend for Herdr {
     }
 
     fn available(&mut self) -> Result<()> {
-        let output = Command::new("herdr").args(["status", "server"]).output().map_err(|e| {
-            if e.kind() == io::ErrorKind::NotFound {
-                Error::unavailable("herdr isn't installed (not found on PATH)")
-            } else {
-                Error::unavailable(format!("couldn't run herdr: {e}"))
-            }
-        })?;
-        let text = String::from_utf8_lossy(&output.stdout);
-        if output.status.success() && text.lines().any(|l| l.trim() == "status: running") {
+        if self.running()? {
             Ok(())
         } else {
             Err(Error::unavailable("the herdr server isn't running. Run `herdr` once to start it"))
         }
+    }
+
+    fn start(&mut self) -> Result<()> {
+        if self.running()? {
+            return Ok(());
+        }
+        if self.verbose {
+            eprintln!("herdr server");
+        }
+        let mut command = Command::new("herdr");
+        command.arg("server").stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null());
+        detach(&mut command);
+        command.spawn().map_err(|e| Error::unavailable(format!("couldn't start the herdr server: {e}")))?;
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while Instant::now() < deadline {
+            thread::sleep(Duration::from_millis(100));
+            if self.running()? {
+                return Ok(());
+            }
+        }
+        Err(Error::unavailable("started the herdr server, but it didn't come up within 5s"))
     }
 
     fn inside(&self) -> bool {
@@ -140,12 +210,79 @@ impl Backend for Herdr {
         Ok(())
     }
 
+    fn stop(&mut self, dry_run: bool) -> Result<Vec<Stopped>> {
+        let own_socket = self.own_socket();
+        let own_workspace = env::var("HERDR_WORKSPACE_ID").ok().filter(|_| own_socket.is_some());
+        let mut stopped = Vec::new();
+        for (name, socket) in self.sessions()? {
+            let mine = own_socket.as_deref() == Some(socket.as_str());
+            let workspaces = self.workspaces_at(Some(&socket))?;
+            if !dry_run {
+                // Closed first: herdr restores a stopped session's workspaces
+                // when it next starts. gogo's own workspace and session go
+                // last, in `finish_stop`, since closing them ends gogo.
+                for (id, _) in &workspaces {
+                    if !(mine && own_workspace.as_deref() == Some(id.as_str())) {
+                        self.call_at(Some(&socket), &["workspace", "close", id])?;
+                    }
+                }
+                if mine {
+                    self.stop_last = Some((name.clone(), socket.clone(), own_workspace.clone()));
+                } else {
+                    self.call(&["session", "stop", &name, "--json"])?;
+                }
+            }
+            stopped.push(Stopped { session: name, workspaces: workspaces.into_iter().map(|(_, label)| label).collect() });
+        }
+        Ok(stopped)
+    }
+
+    fn finish_stop(&mut self) -> Result<()> {
+        let Some((name, socket, workspace)) = self.stop_last.take() else {
+            return Ok(());
+        };
+        // Handed to a process in its own Unix session: closing a workspace
+        // kills every process in its panes' sessions, gogo included.
+        let script = r#"[ -n "$2" ] && herdr workspace close "$2" >/dev/null; herdr session stop "$1" --json >/dev/null"#;
+        let workspace = workspace.unwrap_or_default();
+        if self.verbose {
+            eprintln!("HERDR_SOCKET_PATH={} herdr workspace close {}", quote(&socket), quote(&workspace));
+            eprintln!("herdr session stop {} --json", quote(&name));
+        }
+        let mut command = Command::new("sh");
+        command
+            .args(["-c", script, "sh", &name, &workspace])
+            .env("HERDR_SOCKET_PATH", &socket)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null());
+        detach(&mut command);
+        command
+            .spawn()
+            .map_err(|e| Error::failed(format!("couldn't stop herdr session {name}: {e}")))?;
+        Ok(())
+    }
+
     fn attach(&mut self) -> Error {
         if self.verbose {
             eprintln!("herdr");
         }
         let e = Command::new("herdr").exec();
         Error::failed(format!("couldn't attach to herdr: {e}"))
+    }
+}
+
+/// Runs `command` in its own Unix session, so it outlives gogo and anything
+/// that kills gogo's.
+fn detach(command: &mut Command) {
+    // SAFETY: setsid is async-signal-safe and touches no Rust state.
+    unsafe {
+        command.pre_exec(|| {
+            if libc::setsid() == -1 {
+                return Err(io::Error::last_os_error());
+            }
+            Ok(())
+        });
     }
 }
 

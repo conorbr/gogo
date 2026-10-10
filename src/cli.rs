@@ -8,7 +8,8 @@ use crate::backend;
 ///
 /// The everyday form is `gogo <backend> <space>`, e.g. `gogo herdr blog`,
 /// which is `gogo open blog --backend herdr`. `gogo <backend>` lists spaces,
-/// marking the open ones.
+/// marking the open ones. `gogo <backend> stop` closes every workspace and
+/// stops the backend.
 #[derive(Debug, Parser)]
 #[command(name = "gogo", version, about, long_about)]
 pub struct Cli {
@@ -63,6 +64,12 @@ pub enum Command {
         #[arg(long)]
         open: bool,
     },
+    /// Close every workspace and stop every session in the backend
+    Stop {
+        /// List what would be stopped, change nothing
+        #[arg(short = 'n', long)]
+        dry_run: bool,
+    },
     /// Validate space files. Every space if none is named
     Check { space: Option<String> },
     /// Print the version
@@ -79,11 +86,15 @@ pub struct Placement {
     pub no_focus: bool,
 }
 
-const COMMANDS: &[&str] = &["open", "plan", "list", "check", "version", "help"];
+const COMMANDS: &[&str] = &["open", "plan", "list", "stop", "check", "version", "help"];
+/// Commands that read as `gogo <backend> <command>`. A space with one of these
+/// names opens with `gogo open <space> --backend <backend>` instead.
+const BACKEND_COMMANDS: &[&str] = &["stop"];
 const TAKES_VALUE: &[&str] = &["-b", "--backend", "--config"];
 
 /// Rewrites `gogo <backend> <space> ...` to `gogo open <space> --backend
-/// <backend> ...`, and `gogo <backend>` to `gogo list --backend <backend>`.
+/// <backend> ...`, `gogo <backend> stop` to `gogo stop --backend <backend>`,
+/// and `gogo <backend>` to `gogo list --backend <backend>`.
 /// Anything else passes through for clap to parse.
 pub fn expand_shorthand(args: Vec<String>) -> Vec<String> {
     let mut positionals = Vec::new();
@@ -110,6 +121,14 @@ pub fn expand_shorthand(args: Vec<String>) -> Vec<String> {
         return args;
     }
     let mut out = args;
+    if let Some(&second) = positionals.get(1) {
+        if BACKEND_COMMANDS.contains(&out[second].as_str()) {
+            out[first] = out.remove(second);
+            out.insert(first + 1, "--backend".to_owned());
+            out.insert(first + 2, word);
+            return out;
+        }
+    }
     out[first] = if positionals.len() > 1 { "open" } else { "list" }.to_owned();
     out.insert(first + 1, "--backend".to_owned());
     out.insert(first + 2, word);
@@ -140,13 +159,21 @@ mod tests {
     }
 
     #[test]
+    fn backend_and_command_runs_the_command() {
+        assert_eq!(expand("herdr stop"), "stop --backend herdr");
+        assert_eq!(expand("herdr stop -n"), "stop --backend herdr -n");
+        assert_eq!(expand("--json herdr stop"), "--json stop --backend herdr");
+        assert_eq!(expand("herdr blog stop"), "open --backend herdr blog stop");
+    }
+
+    #[test]
     fn planned_backends_are_rewritten_too() {
         assert_eq!(expand("tmux blog"), "open --backend tmux blog");
     }
 
     #[test]
     fn everything_else_passes_through() {
-        for line in ["", "list", "open blog", "blog", "check", "help herdr", "--backend herdr list"] {
+        for line in ["", "list", "open blog", "blog", "check", "help herdr", "--backend herdr list", "stop"] {
             assert_eq!(expand(line), line);
         }
     }

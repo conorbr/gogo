@@ -41,6 +41,7 @@ pub fn run(cli: Cli) -> Result<()> {
         Some(Command::Open { space, dry_run, placement }) => open(&ctx, &space, placement, dry_run),
         Some(Command::Plan { space, placement }) => open(&ctx, &space, placement, true),
         Some(Command::List { open }) => list(&ctx, open),
+        Some(Command::Stop { dry_run }) => stop(&ctx, dry_run),
         Some(Command::Check { space }) => check(&ctx, space.as_deref()),
         Some(Command::Version) => version(&ctx),
     }
@@ -212,6 +213,38 @@ fn list(ctx: &Ctx, only_open: bool) -> Result<()> {
         }
         let notes = if notes.is_empty() { String::new() } else { format!("  ({})", notes.join(", ")) };
         println!("{mark} {:<width$}  {:<7}  {}{notes}", f.name, source_label(f.source), tilde(&f.file));
+    }
+    Ok(())
+}
+
+fn stop(ctx: &Ctx, dry_run: bool) -> Result<()> {
+    let backend_name = choose_backend(ctx)?;
+    let mut backend = backend::get(&backend_name, ctx.verbose)?;
+    let stopped = backend.stop(dry_run)?;
+    if ctx.json {
+        emit(json!({
+            "gogo": JSON_VERSION,
+            "command": "stop",
+            "backend": backend_name,
+            "dry_run": dry_run,
+            "sessions": stopped,
+        }));
+    } else if !ctx.quiet {
+        if stopped.is_empty() {
+            eprintln!("{backend_name} isn't running");
+        }
+        let verb = if dry_run { "would stop" } else { "stopped" };
+        for s in &stopped {
+            let closed = match s.workspaces.len() {
+                0 => "no workspaces".to_owned(),
+                n => format!("{n} workspace{}: {}", if n == 1 { "" } else { "s" }, s.workspaces.join(", ")),
+            };
+            println!("{verb} {backend_name} session {} ({closed})", s.session);
+        }
+    }
+    if !dry_run {
+        let _ = std::io::stdout().flush();
+        backend.finish_stop()?;
     }
     Ok(())
 }

@@ -4,12 +4,13 @@
 
 ```
 gogo <backend> <space> [flags]    open a space in a backend (the everyday form)
+gogo <backend> stop [flags]       close every workspace and stop the backend
 gogo <command> [args] [flags]     everything else
 gogo <backend>                    list spaces, marking which are open in that backend
 gogo                              list spaces
 ```
 
-`gogo herdr blog` is shorthand for `gogo open blog --backend herdr`. Both are supported. The shorthand is the one people type; the long form is the one scripts and docs can rely on.
+`gogo herdr blog` is shorthand for `gogo open blog --backend herdr`, and `gogo herdr stop` for `gogo stop --backend herdr`. Both forms are supported. The shorthand is the one people type; the long form is the one scripts and docs can rely on.
 
 ### Resolving the first word
 
@@ -17,7 +18,7 @@ gogo                              list spaces
 2. A **backend** name (`herdr`, `tmux`) means the shorthand.
 3. Anything else is an error, with a suggestion if it's close to a space, command, or backend.
 
-Commands and backends share one namespace, so a backend can never be called `list` or `open`. Space names can be anything, since they're never first.
+Commands and backends share one namespace, so a backend can never be called `list` or `open`. Space names can be anything, since they're never first. A space called `stop` opens with `gogo open stop --backend herdr`, since `gogo herdr stop` is the command.
 
 ## Commands
 
@@ -26,6 +27,7 @@ Commands and backends share one namespace, so a backend can never be called `lis
 | `open <space>` | Open the space, or focus it if open. Attach if run outside the backend |
 | `close <space>` | Close the space's workspace in the backend |
 | `list` | List spaces and where each is defined. `--open` for only open ones |
+| `stop` | Close every workspace and stop every session in the backend, spaces or not |
 | `show <space>` | Print the resolved space (after defaults and `extends`) |
 | `plan <space>` | Print the plan without running it. Same as `open --dry-run` |
 | `new <space>` | Scaffold a space for the current directory |
@@ -60,6 +62,12 @@ Global:
 | `--no-attach` | Build it but don't attach or focus |
 | `--no-focus` | Build it but leave focus where it is |
 | `--set key=value` | Set a space variable for this run |
+
+`stop`:
+
+| Flag | Meaning |
+|---|---|
+| `-n, --dry-run` | List what would be stopped, change nothing |
 
 `save`:
 
@@ -124,6 +132,8 @@ gogo herdr blog                 # open or focus the blog space in herdr
 gogo tmux blog                  # same space, in tmux
 gogo herdr blog --dry-run       # what would it do
 gogo herdr blog --fresh         # start over
+gogo herdr stop -n              # what would stop kill
+gogo herdr stop                 # close everything, stop herdr
 gogo save blog                  # capture the current herdr workspace as "blog"
 gogo list --open --json         # for a status bar
 gogo check                      # validate every space, e.g. in a dotfiles CI

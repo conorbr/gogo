@@ -72,6 +72,7 @@ A `.gogo.toml` in a project works too, and `GOGO_PATH` adds more folders. Full f
 gogo herdr blog            # open or focus
 gogo herdr blog --dry-run  # show the plan, change nothing
 gogo herdr                 # list spaces, * marks open ones
+gogo herdr stop            # close every workspace, stop every herdr session
 gogo check                 # validate every space
 gogo --json herdr blog     # for scripts
 ```

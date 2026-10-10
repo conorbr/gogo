@@ -10,6 +10,11 @@ pub trait Backend {
     fn name(&self) -> &'static str;
     /// Installed, reachable, and running. Fails with exit code 4 if not.
     fn available(&mut self) -> Result<()>;
+    /// Like `available`, but starts the backend first if it's installed and
+    /// not running.
+    fn start(&mut self) -> Result<()> {
+        self.available()
+    }
     /// gogo is running inside this backend right now.
     fn inside(&self) -> bool;
     /// The open workspace for this space, if there is one. Remembers it for
@@ -19,6 +24,12 @@ pub trait Backend {
     fn open_names(&mut self) -> Result<Vec<String>>;
     /// Runs one step. `Step::Attach` is never passed here; see `attach`.
     fn apply(&mut self, step: &Step) -> Result<()>;
+    /// Closes every workspace and stops every session, or only lists them
+    /// when `dry_run`. Anything that would end gogo itself waits for
+    /// `finish_stop`.
+    fn stop(&mut self, dry_run: bool) -> Result<Vec<Stopped>>;
+    /// Ends what `stop` left: the workspace and session gogo runs in.
+    fn finish_stop(&mut self) -> Result<()>;
     /// Hands the terminal to the backend's client. Only returns on failure.
     fn attach(&mut self) -> Error;
 }
@@ -62,9 +73,16 @@ pub struct Outcome {
     pub attach: bool,
 }
 
+/// A session `stop` stopped, and the workspaces it closed.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct Stopped {
+    pub session: String,
+    pub workspaces: Vec<String>,
+}
+
 /// Runs a plan up to, not including, `Attach`.
 pub fn execute(plan: &Plan, backend: &mut dyn Backend) -> Result<Outcome> {
-    backend.available()?;
+    backend.start()?;
     let (steps, action) = match backend.find(&plan.space)? {
         Some(_) if plan.if_open.iter().any(|s| *s != Step::Attach) => (&plan.if_open, Action::Focused),
         Some(_) => (&plan.if_open, Action::Unchanged),
@@ -116,6 +134,13 @@ pub mod fake {
                 return Err(Error::failed("boom"));
             }
             self.applied.push(step.clone());
+            Ok(())
+        }
+        fn stop(&mut self, dry_run: bool) -> Result<Vec<Stopped>> {
+            let workspaces = if dry_run { self.open.clone() } else { std::mem::take(&mut self.open) };
+            Ok(vec![Stopped { session: "default".into(), workspaces }])
+        }
+        fn finish_stop(&mut self) -> Result<()> {
             Ok(())
         }
         fn attach(&mut self) -> Error {
