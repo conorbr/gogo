@@ -11,7 +11,7 @@
 - Attaching from outside herdr: tested by hand in a real terminal, works.
 - **Not yet tested:** the server-not-running error.
 - **Gap against `cli.md`:** an unknown first word gets clap's suggestion only, not "did you mean `gogo herdr <space>`".
-- **Left for "done when":** install the binary, move the blog space to TOML, and switch dotfiles from the prototype.
+- **v0.1 "done when" met:** installed to `~/.local/bin` (`cargo install --root ~/.local`), the blog space is TOML in `~/dotfiles/gogo/spaces` (linked to `~/.config/gogo/spaces`), and the bash prototype is gone. `gogo herdr blog` runs the Rust build.
 
 ## 2026-10-10
 
