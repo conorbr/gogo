@@ -12,49 +12,23 @@ Opens the `blog` space in herdr: the right directory, the right tabs, and the ri
 
 ## Install
 
-Prebuilt binaries for macOS and Linux. No Rust needed.
+Prebuilt binaries for macOS (Apple Silicon and Intel) and Linux (x86_64 and arm64). No Rust needed.
 
-### macOS
+### macOS and Linux
 
-Apple Silicon and Intel.
+```bash
+curl -fsSL https://raw.githubusercontent.com/conorbr/gogo/main/scripts/install.sh | sh
+```
 
-**Homebrew:**
+It detects your OS and CPU, downloads the latest release, verifies its checksum, and puts `gogo` in `~/.local/bin`. No root. [Read the script](scripts/install.sh) first if you like; the header says exactly what it does. `GOGO_VERSION=0.1.0` pins a version and `GOGO_INSTALL_DIR` changes where it goes.
+
+### Homebrew
 
 ```bash
 brew install conorbr/tap/gogo
 ```
 
-**Or download the binary** into `~/.local/bin`:
-
-```bash
-VERSION=0.1.0
-TARGET="$(uname -m | sed s/arm64/aarch64/)-apple-darwin"
-curl -fsSL "https://github.com/conorbr/gogo/releases/download/v$VERSION/gogo-v$VERSION-$TARGET.tar.gz" | tar -xz
-mkdir -p ~/.local/bin && install -m 755 "gogo-v$VERSION-$TARGET/gogo" ~/.local/bin/gogo
-gogo version
-```
-
-Make sure `~/.local/bin` is on your `PATH`. If you download the archive in a browser instead, macOS may block the binary as unverified. Clear that with `xattr -d com.apple.quarantine ~/.local/bin/gogo`.
-
-### Linux
-
-x86_64 and arm64. Statically linked, so it runs on any distribution.
-
-**Homebrew on Linux:**
-
-```bash
-brew install conorbr/tap/gogo
-```
-
-**Or download the binary** into `~/.local/bin`:
-
-```bash
-VERSION=0.1.0
-TARGET="$(uname -m | sed s/arm64/aarch64/)-unknown-linux-musl"
-curl -fsSL "https://github.com/conorbr/gogo/releases/download/v$VERSION/gogo-v$VERSION-$TARGET.tar.gz" | tar -xz
-mkdir -p ~/.local/bin && install -m 755 "gogo-v$VERSION-$TARGET/gogo" ~/.local/bin/gogo
-gogo version
-```
+Works on macOS and Linux.
 
 ### With Rust
 
@@ -66,9 +40,9 @@ cargo install gogo-spaces
 
 The crate is `gogo-spaces` because `gogo` was taken on crates.io. The command it installs is `gogo`. Latest from GitHub: `cargo install --git https://github.com/conorbr/gogo`. From a checkout: `cargo install --path .`
 
-### Checksums
+### By hand
 
-Every archive on [Releases](https://github.com/conorbr/gogo/releases) has a `.sha256` file next to it. To check a download: `shasum -a 256 -c gogo-v0.1.0-<target>.tar.gz.sha256`.
+Download the archive for your platform from [Releases](https://github.com/conorbr/gogo/releases), check it against the `.sha256` beside it (`shasum -a 256 -c <file>.sha256`), and put `gogo` somewhere on your `PATH`. If you downloaded it in a browser on macOS, clear the quarantine flag first: `xattr -d com.apple.quarantine gogo`. Linux builds are statically linked and run on any distribution.
 
 ## A space
 
@@ -114,7 +88,7 @@ cargo clippy --all-targets
 
 ## Release
 
-1. Bump `version` in `Cargo.toml` and `VERSION=` in both download snippets above. Commit.
+1. Bump `version` in `Cargo.toml`. Commit.
 2. Tag and push: `git tag -a vX.Y.Z -m "gogo X.Y.Z" && git push origin main vX.Y.Z`. The Release workflow builds the binaries and attaches them to the GitHub Release.
 3. `cargo publish`.
 4. Update the formula in [conorbr/homebrew-tap](https://github.com/conorbr/homebrew-tap) (steps in its README).
