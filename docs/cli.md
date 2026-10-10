@@ -78,7 +78,7 @@ Global:
 
 ## Default backend
 
-When `--backend` is missing (`gogo open blog`, or plain `gogo blog` if we allow it):
+When `--backend` is missing from `gogo open blog`:
 
 1. `--backend` flag
 2. `GOGO_BACKEND`

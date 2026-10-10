@@ -26,7 +26,7 @@ Target panes by stable IDs (`%3`), not indexes, since `base-index` and `pane-bas
 | `env` | `new-session`/`new-window -e K=V` |
 | `wait_output` | Poll `tmux capture-pane -p -t <pane>` for the text, with a timeout |
 | `start_agent` | Fallback: `run` the agent command |
-| `prompt_agent` | Fallback: after `ready`, `send-keys -l <text>` then `Enter`. Warns: no guarantee the agent is ready |
+| `prompt_agent` | Skipped, with one warning. With `[tmux] send_prompts = true`: after `ready`, `send-keys -l <text>` then `Enter`, best effort |
 | `focus` (tab) | `tmux select-window -t <window>` |
 | `close` | `tmux kill-session -t =<name>` |
 | `inside()` | `TMUX` is set |

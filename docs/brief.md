@@ -49,4 +49,4 @@ Developers who live in the terminal and work with coding agents. First user: me,
 
 - **herdr adds native layouts.** Plausible. gogo still earns its place through backend-agnostic spaces, agent startup, and tmux support. Check herdr's roadmap before v0.2.
 - **Backend CLIs change.** herdr is young. Keep each backend thin and pin tested versions.
-- **The name.** "gogo" is used elsewhere (an old Go web framework, others). Check GitHub, Homebrew, and package registries before publishing.
+- **The name.** `gogo` is taken on crates.io and used by other CLIs on GitHub. Decided: command `gogo`, crate `gogo-spaces`. See `decisions.md`.

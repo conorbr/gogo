@@ -68,7 +68,7 @@ The planner asks before it plans. Missing native support means a fallback step, 
 | Split sizes | check | yes | even split, with a warning |
 | Wait for output | yes (`pane wait-output`) | no | poll `capture-pane` |
 | Native agents | yes (`agent start`) | no | `run` the agent's command |
-| Agent prompt | yes (`agent prompt --wait`) | no | `send-keys` after `ready`, with a warning |
+| Agent prompt | yes (`agent prompt --wait`) | no | skipped with a warning. `[tmux] send_prompts = true`: `send-keys` after `ready` |
 | Capture for `save` | yes (`pane process-info`) | partial | best effort, warn on gaps |
 
 Fallbacks are visible: `--dry-run` shows the substituted steps, and `open` warns once.

@@ -11,12 +11,14 @@ Each version is usable on its own. Don't start the next until the current one is
 - Exit codes and `--json` as in `cli.md`, from day one. Changing them later breaks scripts.
 - Golden plan tests.
 - **Done when:** `gogo herdr blog` replaces the dotfiles script and nothing feels worse.
+- **Then:** repo goes public with `LICENSE-MIT` and `LICENSE-APACHE`, `gogo-spaces` is published to crates.io, launch post on breen.ie.
 
 ## v0.2: shaping spaces
 
 - Splits and sizes.
 - `close`, `--fresh`, `show`, `new`, `edit`, `doctor`, `backends`.
 - Shell completions, including space names.
+- Maybe: the `gogo <space>` shorthand, if v0.1 use calls for it.
 - `save` for herdr.
 
 ## v0.3: agents

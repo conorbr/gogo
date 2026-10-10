@@ -108,6 +108,7 @@ attach = true
 
 [tmux]
 attach = true
+send_prompts = false   # true: type agent prompts after `ready`, best effort
 ```
 
 ## From the dotfiles prototype
