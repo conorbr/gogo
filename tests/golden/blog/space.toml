@@ -1,0 +1,14 @@
+# The dotfiles prototype's blog space, in TOML.
+dir = "/srv/breen"
+
+[[tab]]
+name = "Claude"
+run = "claude"
+
+[[tab]]
+name = "Editor"
+run = "fresh ."
+
+[[tab]]
+name = "Server"
+run = "npm run dev"

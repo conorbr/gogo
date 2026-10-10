@@ -6,8 +6,56 @@ Open a configured workspace in your terminal multiplexer with one command.
 gogo herdr blog
 ```
 
-Opens the `blog` space in herdr: the right directory, the right tabs, the right panes, and the right processes and agents in them. If it's already open, gogo focuses it instead.
+Opens the `blog` space in herdr: the right directory, the right tabs, and the right commands in them. If it's already open, gogo focuses it instead.
 
-**Status:** design. No code yet. Start at [`docs/`](docs/README.md).
+**Status:** v0.1 in progress. herdr only. Design and roadmap in [`docs/`](docs/README.md).
 
-A working bash prototype lives in `~/dotfiles` (`bin/gogo`, `gogo/herdr/`).
+## Install
+
+From source, with Rust 1.85 or later:
+
+```bash
+cargo install --path .
+```
+
+## A space
+
+`~/.config/gogo/spaces/blog.toml`:
+
+```toml
+dir = "~/Developer/breen"
+
+[[tab]]
+name = "Claude"
+run = "claude"
+
+[[tab]]
+name = "Editor"
+run = "fresh ."
+
+[[tab]]
+name = "Server"
+run = "npm run dev"
+```
+
+A `.gogo.toml` in a project works too, and `GOGO_PATH` adds more folders. Full format: [`docs/config.md`](docs/config.md).
+
+## Use
+
+```bash
+gogo herdr blog            # open or focus
+gogo herdr blog --dry-run  # show the plan, change nothing
+gogo herdr                 # list spaces, * marks open ones
+gogo check                 # validate every space
+gogo --json herdr blog     # for scripts
+```
+
+Everything else: [`docs/cli.md`](docs/cli.md).
+
+## Develop
+
+```bash
+cargo test                         # unit tests and golden plans
+UPDATE_GOLDEN=1 cargo test         # accept plan changes in tests/golden/
+cargo clippy --all-targets
+```

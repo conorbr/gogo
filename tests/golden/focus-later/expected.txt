@@ -1,0 +1,25 @@
+# inside the backend
+plan for site in herdr
+if it's open:
+  focus workspace site
+otherwise:
+  create workspace site with tab Shell in /srv/site with NODE_ENV=development, focused
+  create tab Docs in /srv/site/docs with NODE_ENV=development
+  run in Docs: fresh README.md
+  create tab Server in /srv/site with NODE_ENV=development PORT=4000
+  run in Server: npm run dev
+  focus tab Server
+
+# outside it
+plan for site in herdr
+if it's open:
+  focus workspace site
+  attach
+otherwise:
+  create workspace site with tab Shell in /srv/site with NODE_ENV=development, focused
+  create tab Docs in /srv/site/docs with NODE_ENV=development
+  run in Docs: fresh README.md
+  create tab Server in /srv/site with NODE_ENV=development PORT=4000
+  run in Server: npm run dev
+  focus tab Server
+  attach

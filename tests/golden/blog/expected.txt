@@ -1,0 +1,25 @@
+# inside the backend
+plan for blog in herdr
+if it's open:
+  focus workspace blog
+otherwise:
+  create workspace blog with tab Claude in /srv/breen, focused
+  run in Claude: claude
+  create tab Editor in /srv/breen
+  run in Editor: fresh .
+  create tab Server in /srv/breen
+  run in Server: npm run dev
+
+# outside it
+plan for blog in herdr
+if it's open:
+  focus workspace blog
+  attach
+otherwise:
+  create workspace blog with tab Claude in /srv/breen, focused
+  run in Claude: claude
+  create tab Editor in /srv/breen
+  run in Editor: fresh .
+  create tab Server in /srv/breen
+  run in Server: npm run dev
+  attach

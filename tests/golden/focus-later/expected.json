@@ -1,0 +1,59 @@
+{
+  "space": "site",
+  "backend": "herdr",
+  "if_open": [
+    {
+      "step": "focus_workspace",
+      "name": "site"
+    },
+    {
+      "step": "attach"
+    }
+  ],
+  "otherwise": [
+    {
+      "step": "create_workspace",
+      "name": "site",
+      "first_tab": "Shell",
+      "dir": "/srv/site",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "focus": true
+    },
+    {
+      "step": "create_tab",
+      "name": "Docs",
+      "dir": "/srv/site/docs",
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    {
+      "step": "run",
+      "tab": "Docs",
+      "command": "fresh README.md"
+    },
+    {
+      "step": "create_tab",
+      "name": "Server",
+      "dir": "/srv/site",
+      "env": {
+        "NODE_ENV": "development",
+        "PORT": "4000"
+      }
+    },
+    {
+      "step": "run",
+      "tab": "Server",
+      "command": "npm run dev"
+    },
+    {
+      "step": "focus_tab",
+      "tab": "Server"
+    },
+    {
+      "step": "attach"
+    }
+  ]
+}

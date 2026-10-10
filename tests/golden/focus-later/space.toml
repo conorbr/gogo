@@ -1,0 +1,22 @@
+# Focus on a later tab, env at both levels, a tab dir override, a plain shell.
+name = "site"
+dir = "/srv/site"
+
+[env]
+NODE_ENV = "development"
+
+[[tab]]
+name = "Shell"
+
+[[tab]]
+name = "Docs"
+dir = "/srv/site/docs"
+run = "fresh README.md"
+
+[[tab]]
+name = "Server"
+run = "npm run dev"
+focus = true
+
+[tab.env]
+PORT = "4000"

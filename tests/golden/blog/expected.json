@@ -1,0 +1,50 @@
+{
+  "space": "blog",
+  "backend": "herdr",
+  "if_open": [
+    {
+      "step": "focus_workspace",
+      "name": "blog"
+    },
+    {
+      "step": "attach"
+    }
+  ],
+  "otherwise": [
+    {
+      "step": "create_workspace",
+      "name": "blog",
+      "first_tab": "Claude",
+      "dir": "/srv/breen",
+      "focus": true
+    },
+    {
+      "step": "run",
+      "tab": "Claude",
+      "command": "claude"
+    },
+    {
+      "step": "create_tab",
+      "name": "Editor",
+      "dir": "/srv/breen"
+    },
+    {
+      "step": "run",
+      "tab": "Editor",
+      "command": "fresh ."
+    },
+    {
+      "step": "create_tab",
+      "name": "Server",
+      "dir": "/srv/breen"
+    },
+    {
+      "step": "run",
+      "tab": "Server",
+      "command": "npm run dev"
+    },
+    {
+      "step": "attach"
+    }
+  ]
+}
