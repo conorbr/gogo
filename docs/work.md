@@ -3,7 +3,8 @@
 ## 2026-10-10: going public
 
 - Added `LICENSE-MIT` and `LICENSE-APACHE` (Apache text from apache.org). Crate metadata: repository, keywords, categories; `publish = false` removed.
-- README: install with `cargo install gogo-spaces`, licence section.
+- README: install from GitHub with `cargo install --git`, licence section.
+- Public on GitHub at github.com/conorbr/gogo. crates.io held for now: `gogo-spaces` publishes later, then the README switches to `cargo install gogo-spaces`.
 
 ## 2026-10-10: v0.1 build
 
