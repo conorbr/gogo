@@ -5,7 +5,10 @@ edition = "2024"
 rust-version = "1.85"
 description = "Open a configured workspace in your terminal multiplexer with one command"
 license = "MIT OR Apache-2.0"
-publish = false
+repository = "https://github.com/conorbr/gogo"
+readme = "README.md"
+keywords = ["herdr", "tmux", "workspace", "terminal", "agents"]
+categories = ["command-line-utilities", "development-tools"]
 
 [[bin]]
 name = "gogo"

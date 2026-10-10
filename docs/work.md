@@ -1,5 +1,10 @@
 # Work log
 
+## 2026-10-10: going public
+
+- Added `LICENSE-MIT` and `LICENSE-APACHE` (Apache text from apache.org). Crate metadata: repository, keywords, categories; `publish = false` removed.
+- README: install with `cargo install gogo-spaces`, licence section.
+
 ## 2026-10-10: v0.1 build
 
 - Rust crate `gogo-spaces`, binary `gogo`. `publish = false` until the repo goes public.

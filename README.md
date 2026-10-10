@@ -8,15 +8,19 @@ gogo herdr blog
 
 Opens the `blog` space in herdr: the right directory, the right tabs, and the right commands in them. If it's already open, gogo focuses it instead.
 
-**Status:** v0.1 in progress. herdr only. Design and roadmap in [`docs/`](docs/README.md).
+**Status:** v0.1. herdr only for now; tmux is planned. Design and roadmap in [`docs/`](docs/README.md).
 
 ## Install
 
-From source, with Rust 1.85 or later:
+With Rust 1.85 or later:
 
 ```bash
-cargo install --path .
+cargo install gogo-spaces
 ```
+
+The crate is `gogo-spaces` because `gogo` was taken. The command it installs is `gogo`.
+
+From a checkout: `cargo install --path .`
 
 ## A space
 
@@ -59,3 +63,7 @@ cargo test                         # unit tests and golden plans
 UPDATE_GOLDEN=1 cargo test         # accept plan changes in tests/golden/
 cargo clippy --all-targets
 ```
+
+## Licence
+
+MIT or Apache-2.0, at your option. See [`LICENSE-MIT`](LICENSE-MIT) and [`LICENSE-APACHE`](LICENSE-APACHE).
