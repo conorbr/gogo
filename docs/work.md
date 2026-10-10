@@ -8,7 +8,8 @@
 - Keys from later versions (`agent`, `prompt`, `split`, ...) fail with "planned for vX", not just "unknown field".
 - Tests: 39 unit tests, golden plans in `tests/golden/` (inside and outside, text and JSON), a fake backend for the executor. Clippy clean.
 - Tested against real herdr 0.9.3 inside herdr: create (env merge, per-tab dirs, run, focus tab), re-run focuses, `--open` marks it, `--json` output. Errors and exit codes checked by hand.
-- **Not yet tested:** attaching from outside herdr (needs a real terminal), and the server-not-running error.
+- Attaching from outside herdr: tested by hand in a real terminal, works.
+- **Not yet tested:** the server-not-running error.
 - **Gap against `cli.md`:** an unknown first word gets clap's suggestion only, not "did you mean `gogo herdr <space>`".
 - **Left for "done when":** install the binary, move the blog space to TOML, and switch dotfiles from the prototype.
 
