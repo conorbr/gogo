@@ -18,6 +18,8 @@ With Homebrew:
 brew install conorbr/tap/gogo
 ```
 
+Prebuilt for macOS (Apple Silicon and Intel) and Linux (x86_64 and arm64). No Rust needed. Or download a binary from [Releases](https://github.com/conorbr/gogo/releases).
+
 Or with Rust 1.85 or later:
 
 ```bash
