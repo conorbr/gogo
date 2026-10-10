@@ -70,17 +70,18 @@ struct TabFile {
 /// Keys from docs/config.md that later versions add. Named in the error so a
 /// space written from the docs fails with a reason, not just "unknown field".
 const PLANNED_KEYS: &[(&str, &str)] = &[
-    ("agent", "v0.3"),
-    ("agent_name", "v0.3"),
-    ("agent_args", "v0.3"),
-    ("prompt", "v0.3"),
-    ("ready", "v0.3"),
-    ("ready_timeout", "v0.3"),
-    ("before", "v0.3"),
-    ("vars", "v0.3"),
+    ("agent", "v0.4"),
+    ("agent_name", "v0.4"),
+    ("agent_args", "v0.4"),
+    ("prompt", "v0.4"),
+    ("ready", "v0.4"),
+    ("ready_timeout", "v0.4"),
+    ("before", "v0.4"),
+    ("vars", "v0.4"),
     ("pane", "v0.2"),
     ("split", "v0.2"),
     ("size", "v0.2"),
+    ("label", "v0.2"),
     ("extends", "v1.0"),
 ];
 
@@ -276,7 +277,7 @@ mod tests {
     #[test]
     fn planned_keys_say_when_they_arrive() {
         let err = space("[[tab]]\nname = \"A\"\nagent = \"claude\"\n").unwrap_err();
-        assert!(err.message.contains("planned for v0.3"), "{}", err.message);
+        assert!(err.message.contains("planned for v0.4"), "{}", err.message);
     }
 
     #[test]

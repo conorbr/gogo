@@ -38,7 +38,7 @@ pub trait Backend {
 pub const NAMES: &[&str] = &["herdr"];
 /// Backends that are planned. Recognised on the command line so they fail
 /// with a useful message.
-pub const PLANNED: &[(&str, &str)] = &[("tmux", "v0.4")];
+pub const PLANNED: &[(&str, &str)] = &[("tmux", "v0.5")];
 
 pub fn is_backend_name(name: &str) -> bool {
     NAMES.contains(&name) || PLANNED.iter().any(|(n, _)| *n == name)
@@ -206,7 +206,7 @@ mod tests {
     fn planned_backends_say_when() {
         let err = get("tmux", false).err().unwrap();
         assert_eq!(err.kind, crate::error::Kind::NotFound);
-        assert!(err.message.contains("v0.4"));
+        assert!(err.message.contains("v0.5"));
         assert!(is_backend_name("tmux") && is_backend_name("herdr") && !is_backend_name("blog"));
     }
 }

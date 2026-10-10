@@ -75,6 +75,7 @@ name = "Dev"
 | `ready_timeout` | duration | `30s` | Give up waiting after this |
 | `split` | `right` or `down` | first pane: none | Split from the previous pane in this tab |
 | `size` | percent | even | Size of the new pane |
+| `label` | string | none | Name shown on the pane border, where the backend has one |
 | `dir`, `env` | | | As for tabs |
 | `focus` | bool | first pane | The pane focused within the tab |
 
