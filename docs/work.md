@@ -5,6 +5,7 @@
 - Added `LICENSE-MIT` and `LICENSE-APACHE` (Apache text from apache.org). Crate metadata: repository, keywords, categories; `publish = false` removed.
 - README: install from GitHub with `cargo install --git`, licence section.
 - Public on GitHub at github.com/conorbr/gogo. Published `gogo-spaces` 0.1.0 to crates.io the same day. README installs with `cargo install gogo-spaces`.
+- Homebrew tap at github.com/conorbr/homebrew-tap: `brew install conorbr/tap/gogo`. Builds from source (no bottles yet), so it pulls in Homebrew's rust. Style, strict audit, build, and `brew test` pass. Release steps in the tap's README. homebrew-core later, once the repo is old and notable enough for `brew audit --new`.
 
 ## 2026-10-10: v0.1 build
 

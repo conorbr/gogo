@@ -12,7 +12,13 @@ Opens the `blog` space in herdr: the right directory, the right tabs, and the ri
 
 ## Install
 
-With Rust 1.85 or later:
+With Homebrew:
+
+```bash
+brew install conorbr/tap/gogo
+```
+
+Or with Rust 1.85 or later:
 
 ```bash
 cargo install gogo-spaces
