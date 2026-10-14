@@ -28,7 +28,12 @@ pub trait Backend {
     /// when `dry_run`. Anything that would end gogo itself waits for
     /// `finish_stop`.
     fn stop(&mut self, dry_run: bool) -> Result<Vec<Stopped>>;
-    /// Ends what `stop` left: the workspace and session gogo runs in.
+    /// Closes the open workspace for this space, or only checks when
+    /// `dry_run`. `Ok(false)` if it isn't open, or the backend isn't running.
+    /// If gogo runs inside that workspace, the close waits for `finish_stop`.
+    fn close(&mut self, space: &str, dry_run: bool) -> Result<bool>;
+    /// Ends what `stop` or `close` left: the workspace and session gogo runs
+    /// in.
     fn finish_stop(&mut self) -> Result<()>;
     /// Hands the terminal to the backend's client. Only returns on failure.
     fn attach(&mut self) -> Error;
@@ -140,6 +145,13 @@ pub mod fake {
             let workspaces = if dry_run { self.open.clone() } else { std::mem::take(&mut self.open) };
             Ok(vec![Stopped { session: "default".into(), workspaces }])
         }
+        fn close(&mut self, space: &str, dry_run: bool) -> Result<bool> {
+            let open = self.open.iter().any(|n| n == space);
+            if open && !dry_run {
+                self.open.retain(|n| n != space);
+            }
+            Ok(open)
+        }
         fn finish_stop(&mut self) -> Result<()> {
             Ok(())
         }
@@ -200,6 +212,16 @@ mod tests {
         let err = execute(&blog_plan(Options { inside: true, attach: false, focus: true }), &mut fake).unwrap_err();
         assert_eq!(err.message, "boom");
         assert_eq!(fake.applied.len(), 1);
+    }
+
+    #[test]
+    fn close_closes_only_that_space() {
+        let mut fake = Fake { open: vec!["blog".into(), "notes".into()], ..Default::default() };
+        assert!(fake.close("blog", true).unwrap());
+        assert_eq!(fake.open, ["blog", "notes"]);
+        assert!(fake.close("blog", false).unwrap());
+        assert_eq!(fake.open, ["notes"]);
+        assert!(!fake.close("blog", false).unwrap());
     }
 
     #[test]

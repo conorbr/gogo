@@ -41,7 +41,8 @@ pub fn run(cli: Cli) -> Result<()> {
         Some(Command::Open { space, dry_run, placement }) => open(&ctx, &space, placement, dry_run),
         Some(Command::Plan { space, placement }) => open(&ctx, &space, placement, true),
         Some(Command::List { open }) => list(&ctx, open),
-        Some(Command::Stop { dry_run }) => stop(&ctx, dry_run),
+        Some(Command::Stop { space: Some(space), dry_run }) => close(&ctx, &space, dry_run),
+        Some(Command::Stop { space: None, dry_run }) => stop(&ctx, dry_run),
         Some(Command::Check { space }) => check(&ctx, space.as_deref()),
         Some(Command::Version) => version(&ctx),
     }
@@ -240,6 +241,40 @@ fn stop(ctx: &Ctx, dry_run: bool) -> Result<()> {
                 n => format!("{n} workspace{}: {}", if n == 1 { "" } else { "s" }, s.workspaces.join(", ")),
             };
             println!("{verb} {backend_name} session {} ({closed})", s.session);
+        }
+    }
+    if !dry_run {
+        let _ = std::io::stdout().flush();
+        backend.finish_stop()?;
+    }
+    Ok(())
+}
+
+/// `stop <space>`: closes one space's workspace and leaves the backend
+/// running. The space file only has to exist, not be valid.
+fn close(ctx: &Ctx, name: &str, dry_run: bool) -> Result<()> {
+    if !ctx.search.all().iter().any(|f| f.name == name) {
+        let message = format!("no space called {name:?}. `gogo list` shows the ones there are");
+        return Err(Error::not_found(message));
+    }
+    let backend_name = choose_backend(ctx)?;
+    let mut backend = backend::get(&backend_name, ctx.verbose)?;
+    let closed = backend.close(name, dry_run)?;
+    if ctx.json {
+        emit(json!({
+            "gogo": JSON_VERSION,
+            "command": "stop",
+            "space": name,
+            "backend": backend_name,
+            "dry_run": dry_run,
+            "closed": closed,
+        }));
+    } else if !ctx.quiet {
+        if closed {
+            let verb = if dry_run { "would close" } else { "closed" };
+            println!("{verb} {name} in {backend_name}");
+        } else {
+            eprintln!("{name} isn't open in {backend_name}");
         }
     }
     if !dry_run {

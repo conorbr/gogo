@@ -28,7 +28,7 @@ IDs (`w1`, `w1:t2`, `w1:p3`) are opaque and never reused. Read them from each re
 | `start_agent` | `herdr agent start <name> --kind <kind> --pane <pane> [-- args]`. Returns once the agent is ready, or `agent_not_ready` if it's blocked at startup |
 | `prompt_agent` | `herdr agent prompt <name> <text> --wait --timeout <ms>` |
 | `focus` (tab) | check `herdr tab` subcommands |
-| `close` | `herdr workspace close <id>` |
+| `stop <space>` | `herdr workspace close <id>` for the workspace labelled with the space's name |
 | `stop` | For each running session in `herdr session list --json`: `herdr workspace close` every workspace (with `HERDR_SOCKET_PATH` set to the session's socket), then `herdr session stop <name>` |
 | `available()` | `herdr status server` says `status: running` |
 | `start()` (`open`) | If not running, `herdr server` in a new Unix session (`setsid`), then poll `herdr status server` for up to 5s |
@@ -40,6 +40,7 @@ IDs (`w1`, `w1:t2`, `w1:p3`) are opaque and never reused. Read them from each re
 - Workspaces are closed before the session stops: herdr restores a stopped session's workspaces when it next starts.
 - Run inside herdr, gogo's own session goes last, and its own workspace last within it. Closing that workspace kills every process in its panes' Unix sessions, so gogo prints its results, then hands `workspace close` and `session stop` to a `sh` in a new Unix session (`setsid`) and exits. A new process group isn't enough.
 - Stops every session, not only the ones gogo opened, and closes workspaces that aren't spaces.
+- `stop <space>` closes one workspace in the current session (the one `open` uses) and leaves herdr running. Run from inside that workspace, it prints first, then hands `workspace close` to a `setsid` child, as above.
 
 ## Capture (`save`)
 

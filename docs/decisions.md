@@ -4,6 +4,12 @@ Newest first. Each one says what, why, and what it rules out.
 
 ## Made
 
+### 2026-10-14: One space closes with `stop <space>`, not `close`
+
+`gogo herdr stop devcraft` closes that space's workspace and leaves herdr running; `gogo herdr stop` alone still stops everything. The planned `close <space>` command is dropped.
+**Why:** it's what Conor typed when he needed it. One verb for "make it go away", and it fits the existing `gogo <backend> stop` shorthand, so no new first-word rules.
+**Rules out:** a separate `close` command. A space called `stop` still opens with `gogo open stop --backend herdr`, as before.
+
 ### 2026-10-10: Name: command `gogo`, package `gogo-spaces`
 
 `gogo` on crates.io is taken (a terminal URL opener), and `chainreactors/gogo` on GitHub ships a binary called `gogo`. Homebrew has no `gogo`. The command stays `gogo`; the crate is `gogo-spaces`, which installs a `gogo` binary. Homebrew formula `gogo` while it's free.

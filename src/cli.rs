@@ -9,7 +9,8 @@ use crate::backend;
 /// The everyday form is `gogo <backend> <space>`, e.g. `gogo herdr blog`,
 /// which is `gogo open blog --backend herdr`. `gogo <backend>` lists spaces,
 /// marking the open ones. `gogo <backend> stop` closes every workspace and
-/// stops the backend.
+/// stops the backend; `gogo <backend> stop <space>` closes one space's
+/// workspace and leaves the backend running.
 #[derive(Debug, Parser)]
 #[command(name = "gogo", version, about, long_about)]
 pub struct Cli {
@@ -64,8 +65,11 @@ pub enum Command {
         #[arg(long)]
         open: bool,
     },
-    /// Close every workspace and stop every session in the backend
+    /// Close every workspace and stop every session in the backend, or close
+    /// one space's workspace
     Stop {
+        /// Close only this space's workspace, and leave the backend running
+        space: Option<String>,
         /// List what would be stopped, change nothing
         #[arg(short = 'n', long)]
         dry_run: bool,
@@ -93,7 +97,8 @@ const BACKEND_COMMANDS: &[&str] = &["stop"];
 const TAKES_VALUE: &[&str] = &["-b", "--backend", "--config"];
 
 /// Rewrites `gogo <backend> <space> ...` to `gogo open <space> --backend
-/// <backend> ...`, `gogo <backend> stop` to `gogo stop --backend <backend>`,
+/// <backend> ...`, `gogo <backend> stop [space]` to `gogo stop --backend
+/// <backend> [space]`,
 /// and `gogo <backend>` to `gogo list --backend <backend>`.
 /// Anything else passes through for clap to parse.
 pub fn expand_shorthand(args: Vec<String>) -> Vec<String> {
@@ -164,6 +169,17 @@ mod tests {
         assert_eq!(expand("herdr stop -n"), "stop --backend herdr -n");
         assert_eq!(expand("--json herdr stop"), "--json stop --backend herdr");
         assert_eq!(expand("herdr blog stop"), "open --backend herdr blog stop");
+    }
+
+    #[test]
+    fn backend_stop_space_closes_one() {
+        assert_eq!(expand("herdr stop blog"), "stop --backend herdr blog");
+        assert_eq!(expand("herdr stop blog -n"), "stop --backend herdr blog -n");
+        let parse = |line: &[&str]| Cli::try_parse_from(expand_shorthand(line.iter().map(|s| s.to_string()).collect()));
+        let cli = parse(&["gogo", "herdr", "stop", "blog"]).unwrap();
+        assert!(matches!(cli.command, Some(Command::Stop { space: Some(ref s), dry_run: false }) if s == "blog"));
+        let cli = parse(&["gogo", "herdr", "stop"]).unwrap();
+        assert!(matches!(cli.command, Some(Command::Stop { space: None, .. })));
     }
 
     #[test]

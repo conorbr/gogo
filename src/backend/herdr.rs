@@ -23,11 +23,14 @@ pub struct Herdr {
     /// The session gogo runs in, as (name, socket, gogo's workspace ID), left
     /// for `finish_stop`.
     stop_last: Option<(String, String, Option<String>)>,
+    /// gogo's own workspace, as (socket, workspace ID), when `close` was asked
+    /// to close it. Left for `finish_stop`.
+    close_last: Option<(Option<String>, String)>,
 }
 
 impl Herdr {
     pub fn new(verbose: bool) -> Self {
-        Herdr { verbose, workspace: None, tabs: HashMap::new(), stop_last: None }
+        Herdr { verbose, workspace: None, tabs: HashMap::new(), stop_last: None, close_last: None }
     }
 
     fn call(&self, args: &[&str]) -> Result<Value> {
@@ -237,7 +240,47 @@ impl Backend for Herdr {
         Ok(stopped)
     }
 
+    fn close(&mut self, space: &str, dry_run: bool) -> Result<bool> {
+        if !self.running()? {
+            return Ok(false);
+        }
+        let Some(id) = self.find(space)? else {
+            return Ok(false);
+        };
+        if dry_run {
+            return Ok(true);
+        }
+        let own = self.inside() && env::var("HERDR_WORKSPACE_ID").is_ok_and(|w| w == id);
+        if own {
+            // Closing it ends gogo, so it waits for `finish_stop`.
+            self.close_last = Some((self.own_socket(), id));
+        } else {
+            self.call(&["workspace", "close", &id])?;
+        }
+        Ok(true)
+    }
+
     fn finish_stop(&mut self) -> Result<()> {
+        if let Some((socket, workspace)) = self.close_last.take() {
+            // Handed to a process in its own Unix session, as below.
+            if self.verbose {
+                let prefix = socket.as_deref().map(|s| format!("HERDR_SOCKET_PATH={} ", quote(s))).unwrap_or_default();
+                eprintln!("{prefix}herdr workspace close {}", quote(&workspace));
+            }
+            let mut command = Command::new("herdr");
+            command
+                .args(["workspace", "close", &workspace])
+                .stdin(Stdio::null())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null());
+            if let Some(socket) = &socket {
+                command.env("HERDR_SOCKET_PATH", socket);
+            }
+            detach(&mut command);
+            command
+                .spawn()
+                .map_err(|e| Error::failed(format!("couldn't close herdr workspace {workspace}: {e}")))?;
+        }
         let Some((name, socket, workspace)) = self.stop_last.take() else {
             return Ok(());
         };

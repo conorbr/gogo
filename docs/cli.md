@@ -5,12 +5,13 @@
 ```
 gogo <backend> <space> [flags]    open a space in a backend (the everyday form)
 gogo <backend> stop [flags]       close every workspace and stop the backend
+gogo <backend> stop <space>       close one space's workspace, leave the backend running
 gogo <command> [args] [flags]     everything else
 gogo <backend>                    list spaces, marking which are open in that backend
 gogo                              list spaces
 ```
 
-`gogo herdr blog` is shorthand for `gogo open blog --backend herdr`, and `gogo herdr stop` for `gogo stop --backend herdr`. Both forms are supported. The shorthand is the one people type; the long form is the one scripts and docs can rely on.
+`gogo herdr blog` is shorthand for `gogo open blog --backend herdr`, and `gogo herdr stop` for `gogo stop --backend herdr` (`gogo herdr stop blog` for `gogo stop blog --backend herdr`). Both forms are supported. The shorthand is the one people type; the long form is the one scripts and docs can rely on.
 
 ### Resolving the first word
 
@@ -25,9 +26,8 @@ Commands and backends share one namespace, so a backend can never be called `lis
 | Command | What it does |
 |---|---|
 | `open <space>` | Open the space, or focus it if open. Attach if run outside the backend |
-| `close <space>` | Close the space's workspace in the backend |
 | `list` | List spaces and where each is defined. `--open` for only open ones |
-| `stop` | Close every workspace and stop every session in the backend, spaces or not |
+| `stop [space]` | Close every workspace and stop every session in the backend, spaces or not. With a space: close only that space's workspace and leave the backend running. Not open, or the backend not running: says so, exit 0 |
 | `show <space>` | Print the resolved space (after defaults and `extends`) |
 | `plan <space>` | Print the plan without running it. Same as `open --dry-run` |
 | `new <space>` | Scaffold a space for the current directory |
@@ -67,7 +67,7 @@ Global:
 
 | Flag | Meaning |
 |---|---|
-| `-n, --dry-run` | List what would be stopped, change nothing |
+| `-n, --dry-run` | List what would be stopped or closed, change nothing |
 
 `save`:
 
@@ -134,6 +134,7 @@ gogo herdr blog --dry-run       # what would it do
 gogo herdr blog --fresh         # start over
 gogo herdr stop -n              # what would stop kill
 gogo herdr stop                 # close everything, stop herdr
+gogo herdr stop blog            # close blog, leave herdr running
 gogo save blog                  # capture the current herdr workspace as "blog"
 gogo list --open --json         # for a status bar
 gogo check                      # validate every space, e.g. in a dotfiles CI

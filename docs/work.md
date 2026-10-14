@@ -1,5 +1,12 @@
 # Work log
 
+## 2026-10-14: `gogo herdr stop <space>`
+
+- `gogo stop <space>` (`gogo <backend> stop <space>`, `-n` to check only): closes that space's workspace in the current session and leaves herdr running. Not open, or herdr not running: says so, exit 0. Unknown space: exit 3, same message as `open`. The space file only has to exist, not be valid. `--json`: `space`, `backend`, `dry_run`, `closed`.
+- Backend trait: `close(space, dry_run)`. herdr: `find` by label, then `workspace close`; if gogo runs inside that workspace, the close waits for `finish_stop` and runs in a `setsid` child, like `stop`'s own workspace.
+- Tests: 42 unit tests (shorthand and parse for `stop <space>`, the fake backend's close). Clippy clean. The repo isn't rustfmt-clean at default settings (87 diffs before this change), so new code follows the surrounding style.
+- Tested against real herdr 0.9.3 with a throwaway space on `GOGO_PATH`: open, `stop -n`, `--json -n`, `stop`, `stop` again (not open), unknown space (exit 3), and run from a pane inside the workspace being closed (prints, then the workspace closes). Other workspaces untouched.
+
 ## 2026-10-10: `gogo herdr stop`
 
 - `gogo stop` (`gogo <backend> stop`, `-n` to list only): closes every workspace in every running herdr session, then stops each session. `--json` lists sessions and the workspaces closed.

@@ -55,7 +55,7 @@ What a backend implements. Names are illustrative, not a language API.
 | `inside()` | Is gogo running inside this backend right now? |
 | `attach(workspace)` | Hand the terminal to the backend's client |
 | `capture(workspace)` | For `save`: tabs, panes, splits, commands, dirs, agents |
-| `close(workspace)` | For `close` and `--fresh` |
+| `close(space, dry_run)` | For `stop <space>` and `--fresh` |
 
 ## Capabilities
 

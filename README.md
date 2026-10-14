@@ -73,6 +73,7 @@ gogo herdr blog            # open or focus
 gogo herdr blog --dry-run  # show the plan, change nothing
 gogo herdr                 # list spaces, * marks open ones
 gogo herdr stop            # close every workspace, stop every herdr session
+gogo herdr stop blog       # close blog, leave herdr running
 gogo check                 # validate every space
 gogo --json herdr blog     # for scripts
 ```

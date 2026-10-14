@@ -8,7 +8,7 @@ Each version is usable on its own. Don't start the next until the current one is
 - Space lookup: project `.gogo.toml`, user dir, `GOGO_PATH`.
 - `gogo <backend> <space>`, `open`, `list`, `plan` / `--dry-run`, `check`, `version`, `help`.
 - herdr backend. Open or focus. Attach when outside. Starts the herdr server if it isn't running.
-- `gogo herdr stop`: close every workspace and stop every herdr session.
+- `gogo herdr stop`: close every workspace and stop every herdr session. `gogo herdr stop <space>` closes one space (added after 0.1.1).
 - Exit codes and `--json` as in `cli.md`, from day one. Changing them later breaks scripts.
 - Golden plan tests.
 - Install via Homebrew (`conorbr/tap`), a `curl | sh` script, prebuilt binaries on each release, or `cargo install gogo-spaces`.
@@ -23,7 +23,7 @@ Each version is usable on its own. Don't start the next until the current one is
 
 ## v0.3: managing spaces
 
-- `close`, `--fresh`, `show`, `new`, `edit`, `doctor`, `backends`.
+- `--fresh`, `show`, `new`, `edit`, `doctor`, `backends`. (`close` became `stop <space>`.)
 - Shell completions, including space names.
 - Maybe: the `gogo <space>` shorthand, if v0.1 use calls for it.
 - Fallback space: a `default` space that opens in any directory without a `.gogo.toml` (`gogo herdr .`). A project's own space always wins.
